@@ -316,9 +316,19 @@
     .newyear-fireworks .fw-burst, .newyear-confetti .confetti{animation:none;display:none;}
   }
 
-  /* ---------- Halloween header theme (around 31 Oct) ---------- */
+  /* ---------- Seasonal / default theme backdrop layer ----------
+     Fixed full-viewport layer (behind the header, the panel gaps, and the
+     panels themselves - the panels go frosted/translucent automatically
+     whenever a theme is active, see the glass-mode wiring in the JS) that
+     carries the ambient decoration for each theme, matching the design
+     mockup rather than being confined to the header strip. */
+  .seasonal-bg-layer{
+    position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0;
+  }
+
+  /* ---------- Halloween theme (around 31 Oct) ---------- */
   .halloween-fog, .halloween-bats{
-    position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1;display:none;
+    position:absolute;inset:0;overflow:hidden;pointer-events:none;display:none;
   }
   body.halloween-active .halloween-fog, body.halloween-active .halloween-bats{display:block;}
   .halloween-fog::before{
@@ -340,7 +350,7 @@
     .halloween-bats .bat{animation:none;}
   }
 
-  /* ---------- Easter header theme (movable date, Mar/Apr) ---------- */
+  /* ---------- Easter theme (movable date, Mar/Apr) ---------- */
   body.easter-active .app-header .title-block h1,
   body.easter-active .app-header .subtitle{
     color:#3a2a30!important;text-shadow:none!important;
@@ -353,19 +363,19 @@
     background:rgba(60,40,50,.16)!important;color:#3a2a30!important;
   }
   .easter-meadow{
-    position:absolute;left:0;right:0;bottom:0;height:22px;overflow:hidden;pointer-events:none;
-    z-index:1;display:none;
+    position:absolute;left:0;right:0;bottom:0;height:26px;overflow:hidden;pointer-events:none;
+    display:none;
   }
   body.easter-active .easter-meadow{display:block;}
   .easter-meadow::before{
     content:'';position:absolute;inset:0;
     background:linear-gradient(180deg, transparent, rgba(120,178,96,.55));
   }
-  .easter-meadow .bloom{position:absolute;bottom:2px;font-size:12px;}
+  .easter-meadow .bloom{position:absolute;bottom:2px;font-size:14px;}
 
-  /* ---------- King's Day / Koningsdag header theme (27 Apr) ---------- */
+  /* ---------- King's Day / Koningsdag theme (27 Apr) ---------- */
   .koningsdag-confetti{
-    position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1;display:none;
+    position:absolute;inset:0;overflow:hidden;pointer-events:none;display:none;
   }
   body.koningsdag-active .koningsdag-confetti{display:block;}
   .koningsdag-confetti .kd-piece{
@@ -373,6 +383,28 @@
   }
   @media (prefers-reduced-motion: reduce){
     .koningsdag-confetti .kd-piece{animation:none;display:none;}
+  }
+
+  /* ---------- Aurora / Terracotta everyday themes ---------- */
+  .aurora-stars, .terracotta-embers{
+    position:absolute;inset:0;overflow:hidden;pointer-events:none;display:none;
+  }
+  body.theme-aurora .aurora-stars{display:block;}
+  body.theme-terracotta .terracotta-embers{display:block;}
+  .aurora-stars .star{position:absolute;color:#fff;animation:tod-twinkle 2.4s ease-in-out infinite;}
+  .terracotta-embers .ember{
+    position:absolute;bottom:-6%;border-radius:50%;background:#ffb066;
+    box-shadow:0 0 5px 1px rgba(255,176,102,.7);
+    animation:terracotta-ember-rise linear infinite;
+  }
+  @keyframes terracotta-ember-rise{
+    0%{transform:translateY(0) translateX(0);opacity:0;}
+    10%{opacity:.85;}
+    100%{transform:translateY(-115vh) translateX(12px);opacity:0;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .aurora-stars .star{animation:none;opacity:.6;}
+    .terracotta-embers .ember{animation:none;display:none;}
   }
 
   /* ---------- Seasonal greeting text (festive / new year only) ---------- */
@@ -3686,20 +3718,36 @@
     background-image:linear-gradient(180deg,#c3d2ec 0px,#e2e6ee 260px,transparent 480px);
   }
 
-  /* ---- Seasonal / default theme colors, whole-app background ----
-     Unlike the Day/Night wash above (a fading strip near the header), these
-     tint the entire app background solidly, since the header itself stays
-     fully transparent (background:none!important, above) and shows only
-     its own content - the color comes from behind it, the same as it does
-     behind every panel gap on the page. Placed after the Day/Night rules
-     above so a holiday always wins if a tod-* class happens to still be set
-     on body at the same time (applySeasonalHeaderState() keeps the rest
-     mutually exclusive already). Dark theme is left alone, same as above. */
-  :root:not([data-theme="dark"]) body.theme-aurora{ background-color:#d7d9f2; }
-  :root:not([data-theme="dark"]) body.theme-terracotta{ background-color:#f5dcc4; }
-  :root:not([data-theme="dark"]) body.halloween-active{ background-color:#ecd9f5; }
-  :root:not([data-theme="dark"]) body.easter-active{ background-color:#fbe6ef; }
-  :root:not([data-theme="dark"]) body.koningsdag-active{ background-color:#ffe0b8; }
+  /* ---- Seasonal / default theme backdrops, whole-app background ----
+     Unlike the subtle Day/Night wash above, these are the same full
+     animated-look gradients used in the design mockup, covering the whole
+     app (fixed, so it stays put behind the content while scrolling) - not
+     just a fading strip near the header. The header itself stays fully
+     transparent (background:none!important, above) and shows only its own
+     content, so the gradient reads straight through it; panels go frosted/
+     translucent automatically while a theme is active (see the glass-mode
+     wiring in the JS), matching the mockup's "frosted glass" panels.
+     Applied regardless of light/dark theme, since this is a deliberate
+     full takeover of the look rather than a tint of the normal page.
+     Placed after the Day/Night rules above so a holiday or default theme
+     always wins if a tod-* class happens to still be set on body at the
+     same time (applySeasonalHeaderState() keeps the rest mutually
+     exclusive already). */
+  body.theme-aurora{
+    background:linear-gradient(160deg,#1c1f3a,#2d2a52 45%,#141329) fixed;
+  }
+  body.theme-terracotta{
+    background:linear-gradient(160deg,#7a4a2e,#c17a45 50%,#5c3620) fixed;
+  }
+  body.halloween-active{
+    background:linear-gradient(160deg,#2a1a3a,#5a2f6b 45%,#1c1024) fixed;
+  }
+  body.easter-active{
+    background:linear-gradient(160deg,#fbe6ef,#fff3d9 55%,#eaf6e6) fixed;
+  }
+  body.koningsdag-active{
+    background:linear-gradient(160deg,#c2570f,#ff8c1a 50%,#e6720f) fixed;
+  }
 
   /* ---- Logbook/ROB/UMS panels: macOS/iOS card look ----
      Bigger corner radii and a softer shadow on the card itself, pill-shaped
@@ -3753,6 +3801,15 @@
 
 <div class="app-shell">
 
+  <div class="seasonal-bg-layer" id="seasonal-bg-layer" aria-hidden="true">
+    <div class="halloween-fog" id="halloween-fog" aria-hidden="true"></div>
+    <div class="halloween-bats" id="halloween-bats" aria-hidden="true"></div>
+    <div class="easter-meadow" id="easter-meadow" aria-hidden="true"></div>
+    <div class="koningsdag-confetti" id="koningsdag-confetti" aria-hidden="true"></div>
+    <div class="aurora-stars" id="aurora-stars" aria-hidden="true"></div>
+    <div class="terracotta-embers" id="terracotta-embers" aria-hidden="true"></div>
+  </div>
+
   <header class="app-header">
     <div class="header-waves" aria-hidden="true"><span class="wave wave1"></span><span class="wave wave2"></span></div>
     <div class="header-ship" aria-hidden="true"></div>
@@ -3769,10 +3826,6 @@
     <div class="tod-lightning-bolt" id="tod-lightning-bolt" aria-hidden="true"></div>
     <div class="tod-lightning-whiteout" id="tod-lightning-whiteout" aria-hidden="true"></div>
     <div class="tod-ufo-layer" id="tod-ufo-layer" aria-hidden="true"></div>
-    <div class="halloween-fog" id="halloween-fog" aria-hidden="true"></div>
-    <div class="halloween-bats" id="halloween-bats" aria-hidden="true"></div>
-    <div class="easter-meadow" id="easter-meadow" aria-hidden="true"></div>
-    <div class="koningsdag-confetti" id="koningsdag-confetti" aria-hidden="true"></div>
     <div class="title-block">
       <h1>Engineroom log <span class="read-only-badge" id="read-only-badge">Read-only</span></h1>
       <div class="subtitle">
@@ -18567,11 +18620,16 @@
   var GLASS_MODE_KEY = 'engineroomlog_glassmode';
   var glassModeEnabled = false;
   try{ glassModeEnabled = localStorage.getItem(GLASS_MODE_KEY) === '1'; }catch(e){}
+  /* Seasonal/default themes force the panels into glass mode automatically
+     while active (matching the design mockup's "frosted glass" panels),
+     independent of the user's own Glass mode preference above - see
+     applySeasonalHeaderState() further down, which sets this flag. */
+  var themeForcedGlassActive = false;
   function updateGlassModeUI(){
     var btn = $('#btn-glass-mode'), label = $('#glass-mode-state');
     if(btn){ btn.classList.toggle('on', glassModeEnabled); btn.setAttribute('aria-checked', glassModeEnabled ? 'true' : 'false'); }
     if(label) label.textContent = glassModeEnabled ? 'On' : 'Off';
-    document.body.classList.toggle('glass-mode', glassModeEnabled);
+    document.body.classList.toggle('glass-mode', glassModeEnabled || themeForcedGlassActive);
   }
   updateGlassModeUI();
   var glassModeBtn = $('#btn-glass-mode');
@@ -23137,6 +23195,24 @@
   function renderTodStars(){
     scatterOnce('#tod-stars', ['\u2726','\u00b7'], 18, 'star', 6, 6, 0, 2.4);
   }
+  function renderAuroraStars(){
+    scatterOnce('#aurora-stars', ['\u2726','\u00b7'], 40, 'star', 5, 6, 0, 2.4);
+  }
+  function renderTerracottaEmbers(){
+    var host = $('#terracotta-embers');
+    if(!host || host.childNodes.length || prefersReducedMotion()) return;
+    for(var i = 0; i < 16; i++){
+      var s = document.createElement('span');
+      s.className = 'ember';
+      s.style.left = (Math.random()*94 + 2) + '%';
+      var size = 3 + Math.random()*4;
+      s.style.width = size + 'px';
+      s.style.height = size + 'px';
+      s.style.animationDuration = (8 + Math.random()*8) + 's';
+      s.style.animationDelay = (Math.random()*10) + 's';
+      host.appendChild(s);
+    }
+  }
   function renderTodBirds(){
     var host = $('#tod-birds');
     if(!host || host.childNodes.length) return;
@@ -23478,9 +23554,16 @@
     if(easter) renderEasterAmbient();
     if(koningsdag) renderKoningsdagAmbient();
 
-    document.body.classList.toggle('theme-aurora', defaultThemeChoice === 'aurora');
-    document.body.classList.toggle('theme-terracotta', defaultThemeChoice === 'terracotta');
-    if(defaultThemeChoice === 'aurora') renderTodStars();
+    var isAurora = !festive && !newyear && !halloween && !easter && !koningsdag && defaultThemeChoice === 'aurora';
+    var isTerracotta = !festive && !newyear && !halloween && !easter && !koningsdag && defaultThemeChoice === 'terracotta';
+    document.body.classList.toggle('theme-aurora', isAurora);
+    document.body.classList.toggle('theme-terracotta', isTerracotta);
+    if(isAurora) renderAuroraStars();
+    if(isTerracotta) renderTerracottaEmbers();
+
+    var themeActive = festive || newyear || halloween || easter || koningsdag || isAurora || isTerracotta;
+    themeForcedGlassActive = themeActive;
+    updateGlassModeUI();
 
     if(defaultThemeChoice === 'todcycle'){
       var phase = todPhase(now);
